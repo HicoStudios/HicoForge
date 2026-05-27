@@ -1,0 +1,42 @@
+HicoForge - Quick Install
+==========================
+
+Requirements
+------------
+- Windows 10 or 11
+- Python 3.12 installed (https://www.python.org/downloads/)
+  * Tip: check "Add python.exe to PATH" during install.
+- NVIDIA GPU with a recent driver recommended (CPU also works, slower).
+
+Install
+-------
+1. Unzip this folder somewhere permanent, for example:
+       D:\HicoForge\
+
+2. Double-click setup.bat
+   - Creates a local .venv inside the install folder
+   - Installs all Python dependencies
+   - Optionally installs background-removal support (rembg + onnxruntime-gpu)
+   - Creates a Desktop shortcut and a Start Menu shortcut with the HF icon
+
+3. Launch HicoForge from the Desktop shortcut or Start Menu.
+
+Files in this folder
+--------------------
+  setup.bat            Run this once to install.
+  HicoForge.vbs        Silent launcher used by the shortcuts.
+  HicoForge.bat        Debug launcher (keeps a console window open).
+  install_shortcuts.ps1 PowerShell helper used by setup.bat.
+  assets\HicoForge.ico Application icon.
+  main.py              Application entry point.
+
+If something goes wrong
+-----------------------
+- Try double-clicking HicoForge.bat instead of the shortcut.
+  This launches with a console window so any error messages stay visible.
+- Re-run setup.bat. It is safe to run multiple times; it reuses the venv.
+
+Uninstall
+---------
+Delete the Desktop and Start Menu shortcuts (they're regular .lnk files),
+then delete the install folder. Nothing else is changed on your system.

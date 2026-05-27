@@ -1,0 +1,19 @@
+# --- HicoForge full app (through Chunk 8) ---
+PySide6>=6.6.0
+numpy>=1.26.0
+opencv-python>=4.9.0
+spandrel>=0.4.0          # 0.4+ has native SCUNet / FBCNN / GFPGAN support
+Pillow>=10.0.0           # PIL for HEIC/HEIF/AVIF fallback decoding
+pillow-heif>=0.16.0      # iPhone HEIC photo support
+
+# PyTorch must match your CUDA build. On Windows with CUDA 12.8 (RTX 5090):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+# Or for CPU-only fallback:
+#   pip install torch torchvision
+# We don't pin it here so the user can pick the right wheel.
+
+# --- Optional: background removal tile (Remove Background) ---
+# Only needed if you actually drop images on the Remove Background tile.
+# The first run downloads ~170 MB of ONNX weights into ~/.u2net/.
+#   pip install rembg onnxruntime          # CPU
+#   pip install rembg onnxruntime-gpu      # CUDA (for RTX cards)
