@@ -35,3 +35,8 @@ output/
 temp/
 *.log
 *.tmp
+
+# Backups
+*.bak
+*.bak1
+*.bak2

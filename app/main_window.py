@@ -44,6 +44,7 @@ from app.rembg_settings_dialog import RembgSettingsDialog
 from app.app_settings_dialog import AppSettingsDialog
 from app.history_dialog import HistoryDialog
 from app.toast import ToastManager
+from app.update_dialog import UpdateManager
 
 from processors.tool_registry import (
     ALL_TOOLS, get_tool, tools_by_category, CATEGORY_ORDER, CATEGORY_COLOR
@@ -157,6 +158,22 @@ class MainWindow(QWidget):
         # Restore any pending jobs from a previous session (Chunk 8)
         QTimer.singleShot(600, self._restore_pending_queue)
 
+        # --- Auto-updater ---
+        try:
+            self.update_manager = UpdateManager(self)
+            QTimer.singleShot(3000, self.update_manager.check_silently)
+        except Exception as _upd_err:
+            print(f"[updater] init failed: {_upd_err}")
+
+
+    # ---- Updater ----
+    def _open_update_check(self):
+        """Title bar update button - force a manual check."""
+        try:
+            self.update_manager.check_manually()
+        except Exception as _e:
+            print(f"[updater] manual check failed: {_e}")
+
     # ---- Title bar ----
     def _build_title_bar(self):
         bar = QWidget(self)
@@ -206,6 +223,13 @@ class MainWindow(QWidget):
         settings_btn.setToolTip("Settings")
         settings_btn.clicked.connect(self._open_app_settings)
         h.addWidget(settings_btn)
+
+        update_btn = QPushButton("↻")
+        update_btn.setObjectName("WinBtn")
+        update_btn.setCursor(Qt.PointingHandCursor)
+        update_btn.setToolTip("Check for updates")
+        update_btn.clicked.connect(self._open_update_check)
+        h.addWidget(update_btn)
 
         min_btn = QPushButton("—")
         min_btn.setObjectName("WinBtn")
