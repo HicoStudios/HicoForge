@@ -47,15 +47,24 @@ for %%P in ("%INSTALL_ROOT%") do (
 set "BACKUP_DIR=%PARENT_DIR%%INSTALL_NAME%_backup_%OLD_VERSION%"
 
 REM -- Step 1: wait for HicoForge to exit ------------------------------------
+REM v1.1.1: wait for any python/pythonw process whose ExecutablePath lives
+REM under the install root (i.e. our own .venv). v1.0.0 only watched
+REM pythonw.exe, so launches via HicoForge.bat (which uses python.exe)
+REM fell through the wait immediately and the ensuing robocopy /MOVE
+REM failed silently on locked files.
+REM Using PowerShell so we match by path, not by image name — we won't
+REM disturb unrelated Python processes the user may have running.
 echo  Waiting for HicoForge to close...
+set "PS_CHECK=$root='%INSTALL_ROOT%'; $p = Get-Process -Name python,pythonw -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase) }; if ($p) { exit 1 } else { exit 0 }"
+set "PS_KILL=$root='%INSTALL_ROOT%'; Get-Process -Name python,pythonw -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }"
 set /a TRIES=0
 :waitloop
-tasklist /FI "IMAGENAME eq pythonw.exe" 2>NUL | find /I "pythonw.exe" >NUL
-if not errorlevel 1 (
+powershell -NoProfile -ExecutionPolicy Bypass -Command "%PS_CHECK%"
+if errorlevel 1 (
     set /a TRIES+=1
     if !TRIES! GEQ 30 (
-        echo  Warning: HicoForge appears stuck. Force-closing...
-        taskkill /F /IM pythonw.exe >NUL 2>&1
+        echo  Warning: HicoForge appears stuck. Force-closing HicoForge processes...
+        powershell -NoProfile -ExecutionPolicy Bypass -Command "%PS_KILL%"
         timeout /t 2 /nobreak >NUL
         goto :proceed
     )
@@ -63,7 +72,8 @@ if not errorlevel 1 (
     goto :waitloop
 )
 :proceed
-timeout /t 1 /nobreak >NUL
+REM Give Windows a moment to release file handles on the install dir.
+timeout /t 2 /nobreak >NUL
 
 REM -- Step 2: back up current install ---------------------------------------
 echo.

@@ -304,11 +304,14 @@ def launch_updater(staged_zip: Path, current_version: str) -> None:
         current_version,
     ]
 
-    # Detach the subprocess so it survives this process exiting.
-    # On Windows: CREATE_NEW_PROCESS_GROUP + DETACHED_PROCESS
+    # v1.1.1: Use CREATE_NEW_CONSOLE (0x00000010) instead of DETACHED_PROCESS.
+    # The detached flag was hiding the console window entirely — if anything
+    # went wrong, the user saw nothing. NEW_CONSOLE gives the .bat its own
+    # visible window that survives our process exiting. NEW_PROCESS_GROUP is
+    # kept so Ctrl+C in our parent doesn't propagate to the updater.
     creationflags = 0
     if sys.platform.startswith("win"):
-        creationflags = 0x00000008 | 0x00000200  # DETACHED_PROCESS | NEW_PROCESS_GROUP
+        creationflags = 0x00000010 | 0x00000200  # CREATE_NEW_CONSOLE | NEW_PROCESS_GROUP
 
     subprocess.Popen(
         args,
